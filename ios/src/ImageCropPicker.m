@@ -169,8 +169,16 @@ RCT_EXPORT_METHOD(openCamera:(NSDictionary *)options
         if ([[self.options objectForKey:@"useFrontCamera"] boolValue]) {
             picker.cameraDevice = UIImagePickerControllerCameraDeviceFront;
         }
+        
+        NSString *mediaType = [self.options objectForKey:@"mediaType"];
+        if ([mediaType isEqualToString:@"any"]) {
+            picker.mediaTypes = @[(NSString *)kUTTypeMovie, (NSString *)kUTTypeImage]; // added by YYZ to support taking video
+        } else if ([mediaType isEqualToString:@"photo"]) {
+            picker.mediaTypes = @[(NSString *)kUTTypeImage];
+        } else {
+            picker.mediaTypes = @[(NSString *)kUTTypeMovie];
+        }
 
-        picker.mediaTypes = @[(NSString *)kUTTypeMovie, (NSString *)kUTTypeImage]; // added by YYZ to support taking video
         if ([[self.options objectForKey:@"videoQuality"] isEqualToString:@"high"]) {
             picker.videoQuality = UIImagePickerControllerQualityTypeHigh;
         }
