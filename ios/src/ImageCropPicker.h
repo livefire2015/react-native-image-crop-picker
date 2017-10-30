@@ -10,13 +10,8 @@
 
 #import <Foundation/Foundation.h>
 
-#if __has_include("RCTBridgeModule.h")
-#import "RCTBridgeModule.h"
-#import "RCTImageLoader.h"
-#else
 #import <React/RCTBridgeModule.h>
 #import <React/RCTImageLoader.h>
-#endif
 
 #if __has_include("QBImagePicker.h")
 #import "QBImagePicker.h"
@@ -25,9 +20,6 @@
 #import <QBImagePickerController/QBImagePickerController.h>
 #import <RSKImageCropper/RSKImageCropper.h>
 #else
-#import "QBImagePicker/QBImagePicker.h"
-#import "RSKImageCropper/RSKImageCropper.h"
-#endif
 
 #import "UIImage+Resize.h"
 #import "Compression.h"
