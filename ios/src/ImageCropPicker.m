@@ -150,7 +150,6 @@ RCT_EXPORT_METHOD(openCamera:(NSDictionary *)options
 
     [self setConfiguration:options resolver:resolve rejecter:reject];
     self.currentSelectionMode = CAMERA;
-    self.cropOnly = NO;
 
 #if TARGET_IPHONE_SIMULATOR
     self.reject(ERROR_PICKER_CANNOT_RUN_CAMERA_ON_SIMULATOR_KEY, ERROR_PICKER_CANNOT_RUN_CAMERA_ON_SIMULATOR_MSG, nil);
@@ -330,7 +329,6 @@ RCT_EXPORT_METHOD(openPicker:(NSDictionary *)options
 
     [self setConfiguration:options resolver:resolve rejecter:reject];
     self.currentSelectionMode = PICKER;
-    self.cropOnly = NO;
 
     [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
         if (status != PHAuthorizationStatusAuthorized) {
@@ -414,7 +412,6 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
 
     [self setConfiguration:options resolver:resolve rejecter:reject];
     self.currentSelectionMode = CROPPING;
-    self.cropOnly = YES;
 
     NSString *path = [options objectForKey:@"path"];
 
@@ -883,20 +880,31 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
 - (void)imageCropViewControllerDidCancelCrop:
 (RSKImageCropViewController *)controller {
     [self dismissCropper:controller completion:[self waitAnimationEnd:^{
+      if (self.currentSelectionMode == CROPPING) {
         [UIApplication sharedApplication].idleTimerDisabled = NO;
         self.reject(ERROR_PICKER_CANCEL_KEY, ERROR_PICKER_CANCEL_MSG, nil);
+      }
     }]];
 }
 
 - (void) dismissCropper:(RSKImageCropViewController*) controller completion:(void (^)())completion {
-    //We've presented the cropper on top of the image picker as to not have a double modal animation.
-    //Thus, we need to dismiss the image picker view controller to dismiss the whole stack.
-    if (!self.cropOnly) {
-        UIViewController *topViewController = controller.presentingViewController.presentingViewController;
-        [topViewController dismissViewControllerAnimated:YES completion:completion];
-    } else {
-        [controller dismissViewControllerAnimated:YES completion:completion];
-    }
+    switch (self.currentSelectionMode) {
+        case CROPPING:
+            [controller dismissViewControllerAnimated:YES completion:completion];
+            break;
+        case PICKER:
+            if (selectionDone) {
+                [controller.presentingViewController.presentingViewController dismissViewControllerAnimated:YES completion:completion];
+            } else {
+                // if user opened picker, tried to crop image, and cancelled cropping
+                // return him to the image selection instead of returning him to the app
+                [controller.presentingViewController dismissViewControllerAnimated:YES completion:completion];
+            }
+            break;
+        case CAMERA:
+            [controller.presentingViewController.presentingViewController dismissViewControllerAnimated:YES completion:completion];
+            break;
+     }
 }
 
 // The original image has been cropped.
