@@ -74,7 +74,9 @@ RCT_EXPORT_MODULE();
                                 @"cropperCircleOverlay": @NO,
                                 @"writeTempFile": @YES,
                                 @"includeBase64": @NO,
+                                @"includeExif": @NO,
                                 @"compressVideo": @YES,
+                                @"minFiles": @1,
                                 @"maxFiles": @5,
                                 @"width": @200,
                                 @"waitAnimationEnd": @YES,
@@ -93,6 +95,10 @@ RCT_EXPORT_MODULE();
     }
 
     return self;
+}
+
++ (BOOL)requiresMainQueueSetup {
+    return YES;
 }
 
 - (void (^ __nullable)(void))waitAnimationEnd:(void (^ __nullable)(void))completion {
@@ -198,6 +204,10 @@ RCT_EXPORT_METHOD(openCamera:(NSDictionary *)options
         });
     }];
 #endif
+}
+
+- (void)viewDidLoad {
+    [self viewDidLoad];
 }
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
@@ -342,7 +352,8 @@ RCT_EXPORT_METHOD(openPicker:(NSDictionary *)options
             [QBImagePickerController new];
             imagePickerController.delegate = self;
             imagePickerController.allowsMultipleSelection = [[self.options objectForKey:@"multiple"] boolValue];
-            imagePickerController.maximumNumberOfSelection = [[self.options objectForKey:@"maxFiles"] intValue];
+            imagePickerController.minimumNumberOfSelection = abs([[self.options objectForKey:@"minFiles"] intValue]);
+            imagePickerController.maximumNumberOfSelection = abs([[self.options objectForKey:@"maxFiles"] intValue]);
             imagePickerController.showsNumberOfSelectedAssets = [[self.options objectForKey:@"showsSelectedCount"] boolValue];
 
             NSArray *smartAlbums = [self.options objectForKey:@"smartAlbums"];
@@ -516,6 +527,10 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
                                        error:nil];
 
                  completion([self createAttachmentResponse:[outputURL absoluteString]
+                                                 withExif:nil
+                                             withSourceURL:[sourceURL absoluteString]
+                                       withLocalIdentifier: forAsset.localIdentifier
+                                              withFilename:[forAsset valueForKey:@"filename"]
                                                  withWidth:[NSNumber numberWithFloat:track.naturalSize.width]
                                                 withHeight:[NSNumber numberWithFloat:track.naturalSize.height]
                                                   withMime:@"video/mp4"
@@ -810,6 +825,10 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
         [viewController dismissViewControllerAnimated:YES completion:[self waitAnimationEnd:^{
             [UIApplication sharedApplication].idleTimerDisabled = NO;
             self.resolve([self createAttachmentResponse:filePath
+                                              withExif:exif
+                                          withSourceURL:sourceURL
+                                    withLocalIdentifier:localIdentifier
+                                           withFilename:filename
                                               withWidth:imageResult.width
                                              withHeight:imageResult.height
                                                withMime:imageResult.mime
@@ -887,7 +906,7 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
     }]];
 }
 
-- (void) dismissCropper:(RSKImageCropViewController*) controller completion:(void (^)())completion {
+- (void) dismissCropper:(RSKImageCropViewController*)controller selectionDone:(BOOL)selectionDone completion:(void (^)())completion {
     switch (self.currentSelectionMode) {
         case CROPPING:
             [controller dismissViewControllerAnimated:YES completion:completion];
@@ -904,7 +923,7 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
         case CAMERA:
             [controller.presentingViewController.presentingViewController dismissViewControllerAnimated:YES completion:completion];
             break;
-     }
+    }
 }
 
 // The original image has been cropped.
@@ -920,7 +939,7 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
 
     NSString *filePath = [self persistFile:imageResult.data];
     if (filePath == nil) {
-        [self dismissCropper:controller completion:[self waitAnimationEnd:^{
+        [self dismissCropper:controller selectionDone:YES completion:[self waitAnimationEnd:^{
             self.reject(ERROR_CANNOT_SAVE_IMAGE_KEY, ERROR_CANNOT_SAVE_IMAGE_MSG, nil);
         }]];
         return;
@@ -933,6 +952,10 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
 
     [self dismissCropper:controller selectionDone:YES completion:[self waitAnimationEnd:^{
         self.resolve([self createAttachmentResponse:filePath
+                                          withExif: exif
+                                      withSourceURL: self.croppingFile[@"sourceURL"]
+                                withLocalIdentifier: self.croppingFile[@"localIdentifier"]
+                                       withFilename: self.croppingFile[@"filename"]
                                           withWidth:imageResult.width
                                          withHeight:imageResult.height
                                            withMime:imageResult.mime
