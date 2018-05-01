@@ -33,6 +33,8 @@
 #import "Compression.h"
 #import <math.h>
 
+@import MobileCoreServices;
+
 @interface ImageCropPicker : NSObject<
 UIImagePickerControllerDelegate,
 UINavigationControllerDelegate,
