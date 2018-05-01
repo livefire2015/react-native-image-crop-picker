@@ -248,11 +248,19 @@ RCT_EXPORT_METHOD(openCamera:(NSDictionary *)options
         }
 
         self.resolve([self createAttachmentResponse:[videoDestinationURL absoluteString]
-                                          withWidth:nil
-                                         withHeight:nil
-                                           withMime:nil
-                                           withSize:nil
-                                           withData:nil]);
+                                          withExif: nil
+                                      withSourceURL: nil
+                                withLocalIdentifier: nil
+                                       withFilename: nil
+                                          withWidth: nil
+                                         withHeight: nil
+                                           withMime: nil
+                                           withSize: nil
+                                           withData: nil
+                                           withRect: nil
+                                   withCreationDate: nil
+                               withModificationDate: nil
+                                           ]);
 
         [picker dismissViewControllerAnimated:YES completion:nil];
 
@@ -898,7 +906,7 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
 // Crop image has been canceled.
 - (void)imageCropViewControllerDidCancelCrop:
 (RSKImageCropViewController *)controller {
-    [self dismissCropper:controller completion:[self waitAnimationEnd:^{
+    [self dismissCropper:controller selectionDone:NO completion:[self waitAnimationEnd:^{
       if (self.currentSelectionMode == CROPPING) {
         [UIApplication sharedApplication].idleTimerDisabled = NO;
         self.reject(ERROR_PICKER_CANCEL_KEY, ERROR_PICKER_CANCEL_MSG, nil);
