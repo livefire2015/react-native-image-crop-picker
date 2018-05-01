@@ -257,7 +257,7 @@ RCT_EXPORT_METHOD(openCamera:(NSDictionary *)options
                                            withMime: nil
                                            withSize: nil
                                            withData: nil
-                                           withRect: nil
+                                           withRect: CGRectNull
                                    withCreationDate: nil
                                withModificationDate: nil
                                            ]);
