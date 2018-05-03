@@ -258,8 +258,8 @@ RCT_EXPORT_METHOD(openCamera:(NSDictionary *)options
                                            withSize: [NSNull null]
                                            withData: [NSNull null]
                                            withRect: CGRectNull
-                                   withCreationDate: [NSNull null]
-                               withModificationDate: [NSNull null]
+                                   withCreationDate: nil
+                               withModificationDate: nil
                                            ]);
 
         [picker dismissViewControllerAnimated:YES completion:nil];
