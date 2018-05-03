@@ -248,18 +248,18 @@ RCT_EXPORT_METHOD(openCamera:(NSDictionary *)options
         }
 
         self.resolve([self createAttachmentResponse:[videoDestinationURL absoluteString]
-                                          withExif: nil
-                                      withSourceURL: nil
-                                withLocalIdentifier: nil
-                                       withFilename: nil
-                                          withWidth: nil
-                                         withHeight: nil
-                                           withMime: nil
-                                           withSize: nil
-                                           withData: nil
+                                          withExif: [NSNull null]
+                                      withSourceURL: [NSNull null]
+                                withLocalIdentifier: [NSNull null]
+                                       withFilename: [NSNull null]
+                                          withWidth: [NSNull null]
+                                         withHeight: [NSNull null]
+                                           withMime: [NSNull null]
+                                           withSize: [NSNull null]
+                                           withData: [NSNull null]
                                            withRect: CGRectNull
-                                   withCreationDate: nil
-                               withModificationDate: nil
+                                   withCreationDate: [NSNull null]
+                               withModificationDate: [NSNull null]
                                            ]);
 
         [picker dismissViewControllerAnimated:YES completion:nil];
